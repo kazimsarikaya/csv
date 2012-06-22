@@ -43,8 +43,11 @@ public class CSVParser {
                         declaredFields[i].setAccessible(true);
                     }
                     Object value = declaredFields[i].get(o);
-                    pw.print("\"" + value + "\",");
-
+                    if (value == null) {
+                        pw.print("\"\"");
+                    } else {
+                        pw.print("\"" + value.toString().replace("\"", "\"\"") + "\",");
+                    }
                     if (!access) {
                         declaredFields[i].setAccessible(false);
                     }
@@ -54,7 +57,11 @@ public class CSVParser {
                     declaredFields[declaredFields.length - 1].setAccessible(true);
                 }
                 Object value = declaredFields[declaredFields.length - 1].get(o);
-                pw.print("\"" + value + "\",");
+                if (value == null) {
+                    pw.println("\"\"");
+                } else {
+                    pw.println("\"" + value.toString().replace("\"", "\"\"") + "\"");
+                }
 
                 if (!access) {
                     declaredFields[declaredFields.length - 1].setAccessible(false);
