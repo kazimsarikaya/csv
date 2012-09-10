@@ -1,1 +1,9 @@
 CVS Parser
+
+Writes entity classes to a comma separated file.
+Reads entity classes from a comma separated file, returns collection of that.
+
+The delimeter character is only comma however it will be extended.
+The type of fields should be primitive types or String for reading, for writing 
+toString() method is applied. A json support for complex types will be 
+developed.
