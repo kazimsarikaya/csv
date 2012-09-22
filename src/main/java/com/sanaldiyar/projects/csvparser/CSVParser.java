@@ -14,10 +14,37 @@ import java.util.logging.Logger;
  */
 public class CSVParser<T> {
 
+    public enum Delimeter {
+
+        COMMA, TAB, SEMICOLON;
+
+        @Override
+        public String toString() {
+            String res = "";
+            switch (this) {
+                case COMMA:
+                    res=",";
+                    break;
+                case TAB:
+                    res="\t";
+                    break;
+                case SEMICOLON:
+                    res=";";
+                    break;
+            }
+            return res;
+        }
+    }
     private Class<T> clazz;
+    private Delimeter delimeter;
 
     public CSVParser(Class<T> clazz) {
+        this(clazz, Delimeter.COMMA);
+    }
+
+    public CSVParser(Class<T> clazz, Delimeter delimeter) {
         this.clazz = clazz;
+        this.delimeter = delimeter;
     }
 
     public void writeToFile(Collection<T> data, String filename) throws FileNotFoundException {
@@ -34,7 +61,7 @@ public class CSVParser<T> {
         try {
             Field[] declaredFields = clazz.getDeclaredFields();
             for (int i = 0; i < declaredFields.length - 1; i++) {
-                pw.print("\"" + declaredFields[i].getName() + "\",");
+                pw.print("\"" + declaredFields[i].getName() + "\"" + this.delimeter);
             }
             pw.println("\"" + declaredFields[declaredFields.length - 1].getName() + "\"");
             pw.flush();
@@ -48,9 +75,9 @@ public class CSVParser<T> {
                     }
                     Object value = declaredFields[i].get(o);
                     if (value == null) {
-                        pw.print("\"\"");
+                        pw.print("\"\"" + this.delimeter);
                     } else {
-                        pw.print("\"" + value.toString().replace("\"", "\"\"") + "\",");
+                        pw.print("\"" + value.toString().replace("\"", "\"\"") + "\"" + this.delimeter);
                     }
                     if (!access) {
                         declaredFields[i].setAccessible(false);
@@ -129,27 +156,27 @@ public class CSVParser<T> {
                     String value = parsedLine[fieldMap.get(declaredFields[i].getName()).intValue()];
                     Class<?> type = declaredFields[i].getType();
                     if (type.isPrimitive()) {
-                        
-                        if(type.isAssignableFrom(boolean.class)){
+
+                        if (type.isAssignableFrom(boolean.class)) {
                             declaredFields[i].set(item, Boolean.valueOf(value));
-                        } else if(type.isAssignableFrom(byte.class)){
+                        } else if (type.isAssignableFrom(byte.class)) {
                             declaredFields[i].set(item, Integer.valueOf(value).byteValue());
-                        } else if(type.isAssignableFrom(char.class)){
+                        } else if (type.isAssignableFrom(char.class)) {
                             declaredFields[i].set(item, value.charAt(0));
-                        } else if(type.isAssignableFrom(double.class)){
+                        } else if (type.isAssignableFrom(double.class)) {
                             declaredFields[i].set(item, Double.valueOf(value).doubleValue());
-                        } else if(type.isAssignableFrom(float.class)){
+                        } else if (type.isAssignableFrom(float.class)) {
                             declaredFields[i].set(item, Float.valueOf(value).floatValue());
-                        } else if(type.isAssignableFrom(int.class)){
+                        } else if (type.isAssignableFrom(int.class)) {
                             declaredFields[i].set(item, Integer.valueOf(value).intValue());
-                        } else if(type.isAssignableFrom(long.class)){
+                        } else if (type.isAssignableFrom(long.class)) {
                             declaredFields[i].set(item, Long.valueOf(value).longValue());
-                        } else if(type.isAssignableFrom(short.class)){
+                        } else if (type.isAssignableFrom(short.class)) {
                             declaredFields[i].set(item, Short.valueOf(value).shortValue());
-                        } 
-                        
-                        
-                        
+                        }
+
+
+
                     } else {
                         declaredFields[i].set(item, value);
                     }
@@ -209,10 +236,10 @@ public class CSVParser<T> {
                         incol = !incol;
                     }
                 }
-            } else if (c == ',') {
+            } else if (c == this.delimeter.toString().charAt(0)) {
                 if (border) {
                     if (incol) {
-                        sb.append(',');
+                        sb.append(this.delimeter.toString());
                     }
                 } else {
                     ret.add(sb.toString());
