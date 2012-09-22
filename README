@@ -7,3 +7,41 @@ The delimeter character is only comma however it will be extended.
 The type of fields should be primitive types or String for reading, for writing 
 toString() method is applied. A json support for complex types will be 
 developed.
+
+Example:
+
+Assume that the data class is like that:
+    
+    class Data{
+        private String s1;
+        private int i1;
+
+        public String getS1() {
+            return s1;
+        }
+
+        public void setS1(String s1) {
+            this.s1 = s1;
+        }
+
+        public int getI1() {
+            return i1;
+        }
+
+        public void setI1(int i1) {
+            this.i1 = i1;
+        }
+    }
+
+Initialize the parser with
+
+    CSVParser<Data> parser=new CSVParser<deneme.Data>(Data.class, CSVParser.Delimeter.COMMA);
+
+For reading:
+    Collection<Data> datas = parser.readFromFile("datafile.csv");
+
+For writing:
+
+    Collection<Data> datas;
+    //init datas
+    parser.writeToFile(datas, "datafile.csv");
