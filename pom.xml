@@ -27,7 +27,7 @@
       <repository>
           <id>sanaldiyar-snapshot</id>
           <name>Sanal Diyar Snapshots</name>
-          <url>http://maven2.sanaldiyar.com/repo</url>
+          <url>http://maven2.sanaldiyar.com/snap-repo</url>
       </repository>
   </distributionManagement>
 </project>
