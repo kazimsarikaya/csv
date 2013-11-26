@@ -54,3 +54,7 @@ For writing:
     Collection<Data> datas;
     //init datas
     parser.writeToFile(datas, "datafile.csv");
+
+For long writing you can use the method getCSVWriter
+Writer has three methods. begin starts write to header. close closes file. And
+append adds item to the file.
