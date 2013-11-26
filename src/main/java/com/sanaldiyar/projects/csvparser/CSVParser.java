@@ -78,6 +78,41 @@ public class CSVParser<T> {
         }
     }
 
+    public class CSVWriter implements AutoCloseable {
+
+        private PrintWriter pw;
+        private boolean started;
+        private Field[] declaredFields;
+
+        public void begin() {
+            declaredFields = clazz.getDeclaredFields();
+            for (int i = 0; i < declaredFields.length - 1; i++) {
+                pw.print("\"" + declaredFields[i].getName() + "\"" + delimeter);
+            }
+            pw.println("\"" + declaredFields[declaredFields.length - 1].getName() + "\"");
+            pw.flush();
+        }
+
+        public void append(T item) {
+            try {
+                if (!started) {
+                    throw new UnsupportedOperationException("Cannot append without begin command");
+                }
+                writeItem(pw, declaredFields, pw);
+                pw.flush();
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(CSVParser.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(CSVParser.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        public void close() throws Exception {
+            pw.close();
+        }
+
+    }
+
     public enum Delimeter {
 
         COMMA, TAB, SEMICOLON;
@@ -137,37 +172,8 @@ public class CSVParser<T> {
             pw.println("\"" + declaredFields[declaredFields.length - 1].getName() + "\"");
             pw.flush();
 
-            boolean access;
             for (Object o : data) {
-                for (int i = 0; i < declaredFields.length - 1; i++) {
-                    access = declaredFields[i].isAccessible();
-                    if (!access) {
-                        declaredFields[i].setAccessible(true);
-                    }
-                    Object value = declaredFields[i].get(o);
-                    if (value == null) {
-                        pw.print("\"\"" + this.delimeter);
-                    } else {
-                        pw.print("\"" + value.toString().replace("\"", "\"\"") + "\"" + this.delimeter);
-                    }
-                    if (!access) {
-                        declaredFields[i].setAccessible(false);
-                    }
-                }
-                access = declaredFields[declaredFields.length - 1].isAccessible();
-                if (!access) {
-                    declaredFields[declaredFields.length - 1].setAccessible(true);
-                }
-                Object value = declaredFields[declaredFields.length - 1].get(o);
-                if (value == null) {
-                    pw.println("\"\"");
-                } else {
-                    pw.println("\"" + value.toString().replace("\"", "\"\"") + "\"");
-                }
-
-                if (!access) {
-                    declaredFields[declaredFields.length - 1].setAccessible(false);
-                }
+                writeItem(pw, declaredFields, o);
                 pw.flush();
             }
             pw.flush();
@@ -177,6 +183,56 @@ public class CSVParser<T> {
             Logger.getLogger(CSVParser.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+
+    public CSVWriter getCSVWriter(String filename) throws FileNotFoundException {
+        PrintWriter pw;
+        try {
+            pw = new PrintWriter(filename, "utf-8");
+            return getCSVWriter(pw);
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(CSVParser.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public CSVWriter getCSVWriter(PrintWriter pw) {
+        CSVWriter writer = new CSVWriter();
+        writer.pw = pw;
+        return writer;
+    }
+
+    private void writeItem(PrintWriter pw, Field[] declaredFields, Object o) throws IllegalArgumentException, IllegalAccessException {
+        boolean access;
+        for (int i = 0; i < declaredFields.length - 1; i++) {
+            access = declaredFields[i].isAccessible();
+            if (!access) {
+                declaredFields[i].setAccessible(true);
+            }
+            Object value = declaredFields[i].get(o);
+            if (value == null) {
+                pw.print("\"\"" + this.delimeter);
+            } else {
+                pw.print("\"" + value.toString().replace("\"", "\"\"") + "\"" + this.delimeter);
+            }
+            if (!access) {
+                declaredFields[i].setAccessible(false);
+            }
+        }
+        access = declaredFields[declaredFields.length - 1].isAccessible();
+        if (!access) {
+            declaredFields[declaredFields.length - 1].setAccessible(true);
+        }
+        Object value = declaredFields[declaredFields.length - 1].get(o);
+        if (value == null) {
+            pw.println("\"\"");
+        } else {
+            pw.println("\"" + value.toString().replace("\"", "\"\"") + "\"");
+        }
+
+        if (!access) {
+            declaredFields[declaredFields.length - 1].setAccessible(false);
+        }
     }
 
     public Collection<T> readFromFile(String fileName) throws FileNotFoundException {
