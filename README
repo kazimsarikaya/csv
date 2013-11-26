@@ -11,7 +11,7 @@ developed.
 The binaries of project can be found at:
 http://maven2.sanaldiyar.com
 The friendly repository url is:
-http://maven2.sanaldiyar.com/repo
+http://maven2.sanaldiyar.com/snap-repo
 
 Example:
 
@@ -44,6 +44,10 @@ Initialize the parser with
 
 For reading:
     Collection<Data> datas = parser.readFromFile("datafile.csv");
+
+For long file reading you can use the method getCSVReader
+Reader has three methods. begin starts loading file, close closes file. iterator
+returns the iterator of file. 
 
 For writing:
 
